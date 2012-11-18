@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamicMapper", "DynamicMapper\DynamicMapper.csproj", "{77A597C6-42BB-4ACC-AA63-2970127E3721}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamicMapper.Tests", "DynamicMapper.Tests\DynamicMapper.Tests.csproj", "{2067EBF5-A448-4688-90E5-F9EA67085469}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FA0839BB-37B6-45AF-9C09-B820503BED66}"
+	ProjectSection(SolutionItems) = preProject
+		DynamicMapper.vsmdi = DynamicMapper.vsmdi
+		Local.testsettings = Local.testsettings
+		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = DynamicMapper.vsmdi
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{77A597C6-42BB-4ACC-AA63-2970127E3721}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77A597C6-42BB-4ACC-AA63-2970127E3721}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77A597C6-42BB-4ACC-AA63-2970127E3721}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77A597C6-42BB-4ACC-AA63-2970127E3721}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2067EBF5-A448-4688-90E5-F9EA67085469}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2067EBF5-A448-4688-90E5-F9EA67085469}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2067EBF5-A448-4688-90E5-F9EA67085469}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2067EBF5-A448-4688-90E5-F9EA67085469}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
