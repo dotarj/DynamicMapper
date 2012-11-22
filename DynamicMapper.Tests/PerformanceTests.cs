@@ -44,7 +44,7 @@ namespace DynamicMapper.Tests
                 .Select(index => CreateEntity())
                 .ToList();
 
-            var properties = new List<PropertyInfo>()
+            var properties = new[]
             {
                 typeof(Entity).GetProperty("Int1"),
                 typeof(Entity).GetProperty("String2"),
@@ -55,6 +55,7 @@ namespace DynamicMapper.Tests
 
             // Warming up...
             NormalMap(entities[0], properties);
+            long normalAverage = 0;
 
             Trace.WriteLine("--- Normal map method");
 
@@ -70,6 +71,8 @@ namespace DynamicMapper.Tests
 
                 stopwatch.Stop();
 
+                normalAverage += stopwatch.ElapsedMilliseconds;
+
                 Trace.WriteLine(string.Format("{0} entities in {1} ms.", entityCount, stopwatch.ElapsedMilliseconds));
             }
 
@@ -77,6 +80,8 @@ namespace DynamicMapper.Tests
             Mapper<Entity>.Map(entities[0], properties);
 
             Trace.WriteLine("--- DynamicMapper map method");
+
+            long dynamicAverage = 0;
 
             for (int i = 0; i < testCount; i++)
             {
@@ -90,11 +95,15 @@ namespace DynamicMapper.Tests
 
                 stopwatch.Stop();
 
+                dynamicAverage += stopwatch.ElapsedMilliseconds;
+
                 Trace.WriteLine(string.Format("{0} entities in {1} ms.", entityCount, stopwatch.ElapsedMilliseconds));
             }
+
+            Trace.WriteLine((double)dynamicAverage / normalAverage);
         }
 
-        private dynamic NormalMap(Entity entity, List<PropertyInfo> properties)
+        private dynamic NormalMap(Entity entity, ICollection<PropertyInfo> properties)
         {
             if (entity == null)
             {

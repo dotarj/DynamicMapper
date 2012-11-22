@@ -21,7 +21,7 @@ namespace DynamicMapper.Tests
             // Arrange
             var entity = CreateEntity();
 
-            var properties = new List<PropertyInfo>()
+            var properties = new[]
             {
                 typeof(Entity).GetProperty("Int1"),
                 typeof(Entity).GetProperty("String2"),
@@ -59,7 +59,7 @@ namespace DynamicMapper.Tests
         public void ShouldThrowAnArgumentNullExceptionIfEntityIsNull()
         {
             // Arrange
-            var properties = new List<PropertyInfo>();
+            var properties = new PropertyInfo[0];
 
             // Act
             Mapper<Entity>.Map(null, properties);

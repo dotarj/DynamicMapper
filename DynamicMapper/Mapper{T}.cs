@@ -15,30 +15,22 @@ namespace DynamicMapper
     /// <summary>
     /// Provides a mapping method for <typeparamref name="T"/>.
     /// </summary>
-    /// <typeparam name="T">The type of the object to map.</typeparam>
+    /// <typeparam name="T">The type to map.</typeparam>
     public static class Mapper<T>
     {
+        private static readonly MethodInfo DictionaryAddMethod = typeof(IDictionary<string, object>).GetMethod("Add", new[] { typeof(string), typeof(object) });
+        
+        private static readonly MethodInfo CollectionContainsMethod = typeof(ICollection<PropertyInfo>).GetMethod("Contains", new[] { typeof(PropertyInfo) });
+
+        private static readonly Action<T, ExpandoObject, PropertyInfo[]> MapImpl;
+
         static Mapper()
         {
-            var dictionaryAddMethod = typeof(IDictionary<string, object>).GetMethod("Add", new[] { typeof(string), typeof(object) });
-            var collectionContainsMethod = typeof(ICollection<PropertyInfo>).GetMethod("Contains", new[] { typeof(PropertyInfo) });
-
             var sourceExpression = Expression.Parameter(typeof(T), "source");
-            var propertiesExpression = Expression.Parameter(typeof(ICollection<PropertyInfo>), "properties");
-            var destinationExpression = Expression.Variable(typeof(IDictionary<string, object>));
+            var targetExpression = Expression.Parameter(typeof(ExpandoObject), "target");
+            var propertiesExpression = Expression.Parameter(typeof(PropertyInfo[]), "properties");
+
             var expressions = new List<Expression>();
-
-            expressions.Add(
-                Expression.IfThen(
-                    Expression.Equal(sourceExpression, Expression.Constant(null)),
-                    Expression.Throw(Expression.New(typeof(ArgumentNullException).GetConstructor(new[] { typeof(string) }), Expression.Constant("source")))));
-
-            expressions.Add(
-                Expression.IfThen(
-                    Expression.Equal(propertiesExpression, Expression.Constant(null)),
-                    Expression.Throw(Expression.New(typeof(ArgumentNullException).GetConstructor(new[] { typeof(string) }), Expression.Constant("properties")))));
-
-            expressions.Add(Expression.Assign(destinationExpression, Expression.New(typeof(ExpandoObject))));
 
             typeof(T)
                 .GetProperties()
@@ -47,29 +39,42 @@ namespace DynamicMapper
                 .ForEach(property =>
                 {
                     expressions.Add(
-                        Expression.IfThen(
-                            Expression.Call(propertiesExpression, collectionContainsMethod, Expression.Constant(property, typeof(PropertyInfo))),
-                            Expression.Call(destinationExpression, dictionaryAddMethod,
+                        // if (properties.Contains({property}))
+                        Expression.IfThen(Expression.Call(propertiesExpression, CollectionContainsMethod, Expression.Constant(property, typeof(PropertyInfo))),
+                            // target.Add({property.Name}, (object)source.{property.Name});
+                            Expression.Call(targetExpression, DictionaryAddMethod,
                                 Expression.Constant(property.Name, typeof(string)),
                                 Expression.Convert(Expression.Property(sourceExpression, property), typeof(object)))));
                 });
-            
-            expressions.Add(Expression.Label(Expression.Label()));
-            expressions.Add(destinationExpression);
 
-            var blockExpression = Expression.Block(new[] { destinationExpression }, expressions);
-
-            Mapper<T>.Map = Expression.Lambda<Func<T, ICollection<PropertyInfo>, dynamic>>(blockExpression, sourceExpression, propertiesExpression).Compile();
+            Mapper<T>.MapImpl = Expression.Lambda<Action<T, ExpandoObject, PropertyInfo[]>>(Expression.Block(expressions), sourceExpression, targetExpression, propertiesExpression).Compile();
         }
 
         /// <summary>
-        /// Gets the mapping method associated with <typeparam name="T"/>.
+        /// Maps the <paramref name="properties"/> from <paramref name="source"/> to a dynamic object.
         /// </summary>
-        /// <remarks>
-        /// The resulting method takes a <typeparamref name="T"/> and an <see cref="ICollection{PropertyInfo}"/> 
-        /// and returns an ExpandoObject containing the values from <typeparamref name="T"/> using the 
-        /// properties specified in the <see cref="ICollection{PropertyInfo}"/>.
-        /// </remarks>
-        public static Func<T, ICollection<PropertyInfo>, dynamic> Map { get; private set; }
+        /// <param name="source">The source object to map from.</param>
+        /// <param name="properties">A <see cref="PropertyInfo[]"/> with properties to map.</param>
+        /// <returns>The dynamic object containing the mapped properties.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="source"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="properties"/> is null.</exception>
+        public static dynamic Map(T source, params PropertyInfo[] properties)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException("source");
+            }
+
+            if (properties == null)
+            {
+                throw new ArgumentNullException("properties");
+            }
+
+            dynamic target = new ExpandoObject();
+
+            MapImpl(source, target, properties);
+
+            return target;
+        }
     }
 }
